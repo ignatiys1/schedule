@@ -7,7 +7,9 @@
 
 import Foundation
 
-struct Group: Decodable {
+struct Group: Decodable, Encodable{
+   
+    
     var name = ""
     var facultyId : Int?
     var facultyName: String?
@@ -18,7 +20,7 @@ struct Group: Decodable {
     var calendarId: String?
 }
 
-struct Lecturer: Decodable {
+struct Lecturer: Decodable,  Encodable {
     var firstName: String?
     var lastName: String?
     var middleName: String?

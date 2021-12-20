@@ -98,6 +98,15 @@
 			path = Search;
 			sourceTree = "<group>";
 		};
+		FFCD38792770E13F008D01B6 /* Schedule */ = {
+			isa = PBXGroup;
+			children = (
+				FFD3AFF9276E110C00B3C987 /* ScheduleViewController.swift */,
+				FF8C5894276E3BAC00A74F88 /* ScheduleCell */,
+			);
+			path = Schedule;
+			sourceTree = "<group>";
+		};
 		FFD3AFD4276E0BE500B3C987 = {
 			isa = PBXGroup;
 			children = (
@@ -139,11 +148,10 @@
 		FFD3AFF6276E0E3100B3C987 /* ViewControllers */ = {
 			isa = PBXGroup;
 			children = (
+				FFD3AFE4276E0BE500B3C987 /* MainController.swift */,
+				FFCD38792770E13F008D01B6 /* Schedule */,
 				FF8C58A5276F6DD300A74F88 /* Search */,
 				FF8C5897276E44D300A74F88 /* Extensions */,
-				FF8C5894276E3BAC00A74F88 /* ScheduleCell */,
-				FFD3AFE4276E0BE500B3C987 /* MainController.swift */,
-				FFD3AFF9276E110C00B3C987 /* ScheduleViewController.swift */,
 			);
 			path = ViewControllers;
 			sourceTree = "<group>";

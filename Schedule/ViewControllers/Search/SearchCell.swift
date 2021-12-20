@@ -16,7 +16,8 @@ class SearchCell: UITableViewCell {
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         
-        self.selectionStyle = .none
+        self.backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
+       
         DispatchQueue.main.asyncAfter(deadline: .now()+0.05, execute: {
             self.setConstraints()
         })
@@ -48,4 +49,3 @@ extension SearchCell {
        
     }
 }
-

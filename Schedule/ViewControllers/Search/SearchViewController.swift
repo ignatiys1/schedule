@@ -31,20 +31,26 @@ class SearchViewController: UIViewController {
         let table = UITableView()
         table.translatesAutoresizingMaskIntoConstraints = false
         table.bounces = false
+        table.separatorStyle = .singleLine
+        table.separatorColor = .gray
+        table.layer.cornerRadius = 10
+        table.backgroundColor = #colorLiteral(red: 0.9400000572, green: 0.9400000572, blue: 0.9400000572, alpha: 1)
         return table
     }()
     let idSearchCell = "idSearchCell"
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .white
-        
+        view.backgroundColor = #colorLiteral(red: 0.9400000572, green: 0.9400000572, blue: 0.9400000572, alpha: 1)
         title  = "Search"
         
-        
+        let longPressRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(longPress(longPressGestureRecognizer:)))
+        longPressRecognizer.minimumPressDuration = 0.5
         tableView.delegate = self
         tableView.dataSource = self
         tableView.register(SearchCell.self, forCellReuseIdentifier: idSearchCell)
+        tableView.addGestureRecognizer(longPressRecognizer)
+        
         
         searchField.addTarget(self, action: #selector(self.textFieldDidChange), for: .editingChanged)
         
@@ -57,7 +63,11 @@ class SearchViewController: UIViewController {
 extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return lecturerForShow.count + groupsForShow.count
+        if lecturerForShow.count > 0 || groupsForShow.count > 0 {
+            return lecturerForShow.count + groupsForShow.count
+        } else {
+            return favoritesGroups.count + favoritesLecturers.count
+        }
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -68,16 +78,24 @@ extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: idSearchCell, for: indexPath) as! SearchCell
         
-        cell.backgroundColor = .gray
-        
-        if indexPath.row <= groupsForShow.count-1 {
-            cell.typeName.text = "Group:"
-            cell.justName.text = groupsForShow[indexPath.row].name
+        if lecturerForShow.count > 0 || groupsForShow.count > 0 {
+            if indexPath.row <= groupsForShow.count-1 {
+                cell.typeName.text = "Group:"
+                cell.justName.text = groupsForShow[indexPath.row].name
+            } else {
+                cell.typeName.text = "Lecturer:"
+                cell.justName.text = lecturerForShow[indexPath.row - groupsForShow.count].fio
+            }
         } else {
-            cell.typeName.text = "Lecturer:"
-            cell.justName.text = lecturerForShow[indexPath.row - groupsForShow.count].fio
+            if indexPath.row <= favoritesGroups.count-1 {
+                cell.typeName.text = "Group:"
+                cell.justName.text = favoritesGroups[indexPath.row].name
+            } else {
+                cell.typeName.text = "Lecturer:"
+                cell.justName.text = favoritesLecturers[indexPath.row - favoritesGroups.count].fio
+            }
+            
         }
-        
         
         
         return cell
@@ -85,6 +103,82 @@ extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
     }
     
     
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        
+        
+        
+        if lecturerForShow.count > 0 || groupsForShow.count > 0 {
+            
+            if indexPath.row <= groupsForShow.count-1 {
+                
+                for group in favoritesGroups {
+                    if group.id == groupsForShow[indexPath.row].id {
+                        self.navigationController?.popViewController(animated: true)
+                        return
+                    }
+                }
+                favoritesGroups.append(groupsForShow[indexPath.row])
+                currentGroup = groupsForShow[indexPath.row]
+                currentLecturer = nil
+            } else {
+                for lector in favoritesLecturers {
+                    if lector.id == lecturerForShow[indexPath.row - groupsForShow.count].id {
+                        self.navigationController?.popViewController(animated: true)
+                        return
+                    }
+                }
+                favoritesLecturers.append(lecturerForShow[indexPath.row - groupsForShow.count])
+                currentGroup = nil
+                currentLecturer = lecturerForShow[indexPath.row - groupsForShow.count]
+                
+            }
+            SaveFavorites()
+        } else {
+            
+            if indexPath.row <= favoritesGroups.count-1 {
+                currentGroup = favoritesGroups[indexPath.row]
+                currentLecturer = nil
+            } else {
+                currentGroup = nil
+                currentLecturer = favoritesLecturers[indexPath.row - favoritesGroups.count]
+                
+            }
+            
+            
+        }
+        self.navigationController?.popViewController(animated: true)
+    }
+    
+    
+    func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
+        
+        let delButton = UITableViewRowAction(style: .normal, title: "Del", handler: {rowAction, indexPath in
+            if !(self.lecturerForShow.count > 0 || self.groupsForShow.count > 0) {
+                
+                if indexPath.row <= favoritesGroups.count-1 {
+                    if currentGroup?.id == favoritesGroups[indexPath.row].id {
+                        currentGroup = nil
+                    }
+                    favoritesGroups.remove(at: indexPath.row)
+                    
+                } else {
+                    if currentLecturer?.id == favoritesLecturers[indexPath.row - favoritesGroups.count].id {
+                        currentLecturer = nil
+                    }
+                    favoritesLecturers.remove(at: indexPath.row - favoritesGroups.count)
+                }
+                
+            }
+            SaveFavorites()
+            self.tableView.reloadData()
+        })
+        delButton.backgroundColor = .red
+        
+        
+        return [delButton]
+        
+    }
     
     
 }
@@ -108,8 +202,8 @@ extension SearchViewController {
         view.addSubview(tableView)
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: searchField.bottomAnchor, constant: 10),
-            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 0),
-            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 0),
+            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 10),
+            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -10),
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: 0)
         ])
         
@@ -139,5 +233,24 @@ extension SearchViewController {
             }
         }
         tableView.reloadData()
+    }
+    
+    
+    @objc func longPress(longPressGestureRecognizer: UILongPressGestureRecognizer) {
+        if longPressGestureRecognizer.state == UIGestureRecognizer.State.began {
+            
+            let touchPoint = longPressGestureRecognizer.location(in: self.view)
+            print(touchPoint)
+            if let indexPath = self.tableView.indexPathForRow(at: touchPoint) {
+                if !(lecturerForShow.count > 0 || groupsForShow.count > 0) {
+                    if indexPath.row <= favoritesGroups.count-1 {
+                        favoritesGroups.remove(at: indexPath.row)
+                    } else {
+                        favoritesLecturers.remove(at: indexPath.row - favoritesGroups.count)
+                    }
+                    tableView.reloadData()
+                }
+            }
+        }
     }
 }

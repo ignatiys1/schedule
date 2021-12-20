@@ -16,6 +16,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         dateFormatter.dateFormat = "dd-MM-yyyy HH:mm:ss"
         decoder.dateDecodingStrategy = .formatted(dateFormatter)
+        encoder.dateEncodingStrategy = .formatted(dateFormatter)
+        
         
         window = UIWindow(frame: UIScreen.main.bounds)
         window?.rootViewController = MainController()
@@ -27,6 +29,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
         if groups.isEmpty {
             SetGroupsArray()
+        }
+        
+        if favoritesGroups.isEmpty {
+            SetFavoritesGroups()
+        }
+        
+        if favoritesLecturers.isEmpty {
+            SetFavoritesLecturers()
         }
         
         return true

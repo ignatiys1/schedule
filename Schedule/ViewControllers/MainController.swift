@@ -11,9 +11,14 @@ var groups: [Group]  = []
 var lecturers: [Lecturer]  = []
 
 let decoder = JSONDecoder()
+let encoder = JSONEncoder()
 let dateFormatter = DateFormatter()
 
+var favoritesGroups: [Group]  = []
+var favoritesLecturers: [Lecturer]  = []
 
+var currentGroup: Group?
+var currentLecturer: Lecturer?
 
 class MainController: UINavigationController {
 
@@ -27,8 +32,7 @@ class MainController: UINavigationController {
             UserDefaults.standard.set(url.path, forKey: "groupsFile_url_path")
             UserDefaults.standard.synchronize()
             
-            
-        SetGroupsArray()
+            SetGroupsArray()
             
         })
         
@@ -41,13 +45,17 @@ class MainController: UINavigationController {
             
         })
         
+        
+        
+        
+        
         viewControllers = [ScheduleViewController()]
         
     }
-
     
     
-   
+    
+    
 }
 
 
@@ -77,7 +85,7 @@ func SetGroupsArray() {
         return
     }
     
-   let data = try? Data(contentsOf: URL(fileURLWithPath: url as! String))
+    let data = try? Data(contentsOf: URL(fileURLWithPath: url as! String))
     
     if data == nil {
         return
@@ -89,4 +97,37 @@ func SetGroupsArray() {
     }
     
     
+}
+
+func SetFavoritesGroups() {
+    let data = UserDefaults.standard.object(forKey: "favGroups_array")
+    
+    
+    if data == nil {
+        return
+    }
+    
+    favoritesGroups = try! decoder.decode([Group].self, from: data! as! Data)
+    
+}
+
+
+func SetFavoritesLecturers() {
+    
+    let data = UserDefaults.standard.object(forKey: "favLecturers_array")
+    
+    if data == nil {
+        return
+    }
+    favoritesLecturers = try! decoder.decode([Lecturer].self, from: data! as! Data)
+    
+}
+
+func SaveFavorites() {
+    let favoritesGroupsData = try! encoder.encode(favoritesGroups)
+    let favoritesLecturersData = try! encoder.encode(favoritesLecturers)
+    
+    UserDefaults.standard.set(favoritesGroupsData, forKey: "favGroups_array")
+    UserDefaults.standard.set(favoritesLecturersData, forKey: "favLecturers_array")
+    UserDefaults.standard.synchronize()
 }

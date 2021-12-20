@@ -18,6 +18,7 @@ class ScheduleTableViewCell: UITableViewCell {
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         
+        self.layer.cornerRadius = 10
         self.selectionStyle = .none
         DispatchQueue.main.asyncAfter(deadline: .now()+0.05, execute: {
             self.setConstraints()
