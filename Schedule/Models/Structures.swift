@@ -36,4 +36,55 @@ struct Lecturer: Decodable,  Encodable {
     
 }
 
+struct SomeSchedule: Decodable, Encodable {
+    
+var employee: Lecturer?
+    var studentGroup: Group?
+    var schedules: [ScheduleItem] = []
+    
+    
+    var tomorrowDate: Date?
+    var tomorrowSchedules: [ScheduleItem] = []
+    
+    var todayDate: Date?
+    var todaySchedules: [Subject] = []
+   
+    var examSchedules: [ScheduleItem] = []
+    
+    
+    var currentWeekNumber: Int?
+    var dateStart: Date?
+    var dateEnd: Date?
+    var sessionStart: Date?
+    var sessionEnd: Date?
+    
+}
 
+struct ScheduleItem : Decodable, Encodable {
+    var weekDay: String?
+    var schedule: [Subject] = []
+}
+
+
+struct Subject : Decodable, Encodable {
+   
+    var weekNumber : [Int] = []
+    var studentGroup : [String] = []
+    var studentGroupInformation : [String] = []
+    var numSubgroup: Int?
+    var auditory: [String] = []
+    var lessonTime: String?
+    var startLessonTime: String?
+    var endLessonTime: String?
+    var gradebookLesson : String?
+    var subject: String?
+    var note: String?
+    var lessonType: String?
+    var employee: [Lecturer] = []
+    var studentGroupModelList: String? =  nil
+    var zaoch: Bool = false
+    var gradebookLessonlist: String? = nil
+    
+    
+    
+}

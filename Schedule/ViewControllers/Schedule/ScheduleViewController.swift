@@ -14,6 +14,8 @@ class ScheduleViewController: UIViewController {
     var calendarHeight: NSLayoutConstraint!
     var swipeUp: UISwipeGestureRecognizer!
     var swipeDown: UISwipeGestureRecognizer!
+    var indexInFavorites: Int?
+    
     
     private var calendar: FSCalendar = {
         let calendar = FSCalendar()
@@ -35,7 +37,7 @@ class ScheduleViewController: UIViewController {
     let tableView: UITableView = {
         let table = UITableView()
         table.translatesAutoresizingMaskIntoConstraints = false
-        table.bounces = false
+        //table.bounces = false
         table.separatorStyle = .none
         table.sectionFooterHeight = 10
         table.backgroundColor = #colorLiteral(red: 0.9400000572, green: 0.9400000572, blue: 0.9400000572, alpha: 1)
@@ -60,13 +62,30 @@ class ScheduleViewController: UIViewController {
         showHideButton.isHidden = true
         
         
+        let refreshControl = UIRefreshControl()
+        refreshControl.attributedTitle = NSAttributedString(string: "Updating...")
+        refreshControl.addTarget(self, action: #selector(refresh), for: UIControl.Event.valueChanged)
         tableView.dataSource = self
         tableView.delegate = self
         tableView.register(ScheduleTableViewCell.self, forCellReuseIdentifier: idScheduleCell)
+        tableView.addSubview(refreshControl)
         
         setConstraints()
         createSwipeRecognizer()
         
+    }
+    
+    
+    override func viewWillAppear(_ animated: Bool) {
+        if currentGroup != nil {
+            for (index, schedule) in favoritesSchedules.enumerated() {
+                if schedule.studentGroup?.id == currentGroup?.id {
+                    indexInFavorites = index
+                    tableView.reloadData()
+                    tableView.refreshControl?.endRefreshing()
+                }
+            }
+        }
     }
     
     //MARK: Swipe recognizer
@@ -152,7 +171,26 @@ extension ScheduleViewController: UITableViewDelegate, UITableViewDataSource {
     
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        2
+        guard let indexInFavorites = indexInFavorites else {
+            return 0
+        }
+        let currentSchedules = favoritesSchedules[indexInFavorites].schedules
+        
+        if ((calendar.selectedDate?.isEqual(.now)) != nil) {
+            var count = 0
+            
+            for schItem in favoritesSchedules[indexInFavorites].todaySchedules {
+                for weekNum in schItem.weekNumber {
+                    if weekNum == 0 || weekNum == currentWeekNum {
+                        count += 1
+                    }
+                }
+            }
+            return count
+            
+        }
+        return 0
+        
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -174,13 +212,11 @@ extension ScheduleViewController: UITableViewDelegate, UITableViewDataSource {
         
     }
     
-    
-    
-        func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
-            let headerView = UIView()
-            headerView.backgroundColor = UIColor.clear
-            return headerView
-        }
+    func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+        let headerView = UIView()
+        headerView.backgroundColor = UIColor.clear
+        return headerView
+    }
     
 }
 
@@ -203,7 +239,6 @@ extension ScheduleViewController {
         
     }
     
-    
     @objc func swipeAction(swipe: UISwipeGestureRecognizer) {
         switch swipe {
         case swipeUp:
@@ -220,9 +255,12 @@ extension ScheduleViewController {
         }
     }
     
-    
     @objc func addSchedule () {
         let searchVC = SearchViewController()
         navigationController?.pushViewController(searchVC, animated: true)
+    }
+
+    @objc func refresh() {
+        self.viewWillAppear(true)
     }
 }

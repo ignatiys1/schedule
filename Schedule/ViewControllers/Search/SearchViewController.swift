@@ -102,7 +102,6 @@ extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
         
     }
     
-    
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         
@@ -138,6 +137,15 @@ extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
             
             if indexPath.row <= favoritesGroups.count-1 {
                 currentGroup = favoritesGroups[indexPath.row]
+                RequestManager.shared.loadSchedule(for: favoritesGroups[indexPath.row], completionHandler: {urlPath in
+                    
+                    UserDefaults.standard.set(urlPath.path, forKey: "favorite_url_path")
+                    UserDefaults.standard.synchronize()
+                    
+                    
+                    SetFavoritesSchedules()
+                    
+                })
                 currentLecturer = nil
             } else {
                 currentGroup = nil
@@ -149,7 +157,6 @@ extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
         }
         self.navigationController?.popViewController(animated: true)
     }
-    
     
     func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
         

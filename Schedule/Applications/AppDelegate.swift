@@ -14,7 +14,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         
-        dateFormatter.dateFormat = "dd-MM-yyyy HH:mm:ss"
+        dateFormatter.dateFormat = "dd.MM.yyyy"
         decoder.dateDecodingStrategy = .formatted(dateFormatter)
         encoder.dateEncodingStrategy = .formatted(dateFormatter)
         
@@ -44,4 +44,28 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     
     
+}
+
+extension Date {
+
+    func isBefore(_ date: Date = Date()) -> Bool {
+
+        let calendar = Calendar.current
+
+        let dateComponents = calendar.dateComponents([.year, .month, .day], from: date)
+        let selfComponents = calendar.dateComponents([.year, .month, .day], from: self)
+
+        return calendar.date(from: selfComponents)! < calendar.date(from: dateComponents)!
+    }
+    
+    
+    func isEqual(_ date: Date = Date()) -> Bool {
+
+        let calendar = Calendar.current
+
+        let dateComponents = calendar.dateComponents([.year, .month, .day], from: date)
+        let selfComponents = calendar.dateComponents([.year, .month, .day], from: self)
+
+        return calendar.date(from: selfComponents)! == calendar.date(from: dateComponents)!
+    }
 }

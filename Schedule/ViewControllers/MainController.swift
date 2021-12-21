@@ -16,9 +16,13 @@ let dateFormatter = DateFormatter()
 
 var favoritesGroups: [Group]  = []
 var favoritesLecturers: [Lecturer]  = []
+var favoritesSchedules: [SomeSchedule] = []
+
 
 var currentGroup: Group?
 var currentLecturer: Lecturer?
+
+var currentWeekNum: Int?
 
 class MainController: UINavigationController {
 
@@ -26,6 +30,8 @@ class MainController: UINavigationController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+       currentWeekNum = UserDefaults.standard.object(forKey: "currentWeekNum") as? Int
         
         
         RequestManager.shared.loadGroups(completionHandler: { (url) in
@@ -45,8 +51,14 @@ class MainController: UINavigationController {
             
         })
         
-        
-        
+        RequestManager.shared.loadCurrentWeekNum(completionHandler: { (url) in
+            UserDefaults.standard.set(url.path, forKey: "weekNum_url_path")
+            UserDefaults.standard.synchronize()
+            
+            
+            SetWeekNum()
+            
+        })
         
         
         viewControllers = [ScheduleViewController()]
@@ -111,7 +123,6 @@ func SetFavoritesGroups() {
     
 }
 
-
 func SetFavoritesLecturers() {
     
     let data = UserDefaults.standard.object(forKey: "favLecturers_array")
@@ -122,6 +133,53 @@ func SetFavoritesLecturers() {
     favoritesLecturers = try! decoder.decode([Lecturer].self, from: data! as! Data)
     
 }
+
+func SetFavoritesSchedules() {
+    
+    guard let url = UserDefaults.standard.object(forKey: "favorite_url_path") else {
+        return
+    }
+    
+    let data = try? Data(contentsOf: URL(fileURLWithPath: url as! String))
+    
+    if data == nil {
+        return
+    }
+
+    do {
+        favoritesSchedules.append(try decoder.decode(SomeSchedule.self, from: data!))
+    } catch {
+        print(error)
+    }
+    
+    
+}
+
+
+func SetWeekNum() {
+    
+    guard let url = UserDefaults.standard.object(forKey: "weekNum_url_path") else {
+        return
+    }
+    
+    let data = try? Data(contentsOf: URL(fileURLWithPath: url as! String))
+    
+    if data == nil {
+        return
+    }
+    //var newWeekNum = currentWeekNum
+    let stringInt = String.init(data: data!, encoding: String.Encoding.utf8)
+    currentWeekNum = Int.init(stringInt ?? "")
+    
+    if let currentWeekNum = currentWeekNum {
+        UserDefaults.standard.set(currentWeekNum, forKey: "currentWeekNum")
+        UserDefaults.standard.synchronize()
+    }
+    
+    
+    
+}
+
 
 func SaveFavorites() {
     let favoritesGroupsData = try! encoder.encode(favoritesGroups)
