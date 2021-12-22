@@ -31,8 +31,28 @@ class MainController: UINavigationController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-       currentWeekNum = UserDefaults.standard.object(forKey: "currentWeekNum") as? Int
+        if lecturers.isEmpty {
+            SetLecturersArray()
+        }
+        if groups.isEmpty {
+            SetGroupsArray()
+        }
         
+        if favoritesGroups.isEmpty {
+            SetFavoritesGroups()
+        }
+        
+        if favoritesLecturers.isEmpty {
+            SetFavoritesLecturers()
+        }
+        if favoritesSchedules.isEmpty {
+            SetFavoritesSchedulesFromArray()
+        }
+        
+        currentWeekNum = UserDefaults.standard.object(forKey: "currentWeekNum") as? Int
+        if !favoritesGroups.isEmpty {
+            currentGroup = favoritesGroups[0]
+        }
         
         RequestManager.shared.loadGroups(completionHandler: { (url) in
             UserDefaults.standard.set(url.path, forKey: "groupsFile_url_path")
@@ -134,7 +154,18 @@ func SetFavoritesLecturers() {
     
 }
 
-func SetFavoritesSchedules() {
+func SetFavoritesSchedulesFromArray() {
+    let data = UserDefaults.standard.object(forKey: "favoritesSchedules_array")
+    
+    
+    if data == nil {
+        return
+    }
+    
+    favoritesSchedules = try! decoder.decode([SomeSchedule].self, from: data! as! Data)
+    
+}
+func SetFavoritesSchedulesFromUrl() {
     
     guard let url = UserDefaults.standard.object(forKey: "favorite_url_path") else {
         return
@@ -187,5 +218,13 @@ func SaveFavorites() {
     
     UserDefaults.standard.set(favoritesGroupsData, forKey: "favGroups_array")
     UserDefaults.standard.set(favoritesLecturersData, forKey: "favLecturers_array")
+    UserDefaults.standard.synchronize()
+}
+
+func SaveFavoritesSchedules() {
+    let favoritesSchedulesData = try! encoder.encode(favoritesSchedules)
+    
+    
+    UserDefaults.standard.set(favoritesSchedulesData, forKey: "favoritesSchedules_array")
     UserDefaults.standard.synchronize()
 }

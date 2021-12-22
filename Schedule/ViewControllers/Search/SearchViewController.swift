@@ -12,6 +12,7 @@ class SearchViewController: UIViewController {
     
     var groupsForShow: [Group] = []
     var lecturerForShow: [Lecturer] = []
+    var delegateUpdate: UpdateProtocol?
     
     let searchField : UITextField = {
         let field = UITextField()
@@ -119,6 +120,16 @@ extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
                 }
                 favoritesGroups.append(groupsForShow[indexPath.row])
                 currentGroup = groupsForShow[indexPath.row]
+                RequestManager.shared.loadSchedule(for: currentGroup!, completionHandler: {urlPath in
+                    
+                    UserDefaults.standard.set(urlPath.path, forKey: "favorite_url_path")
+                    UserDefaults.standard.synchronize()
+                    
+                    
+                    SetFavoritesSchedulesFromUrl()
+                    SaveFavoritesSchedules()
+                    self.delegateUpdate?.update()
+                })
                 currentLecturer = nil
             } else {
                 for lector in favoritesLecturers {
@@ -143,8 +154,9 @@ extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
                     UserDefaults.standard.synchronize()
                     
                     
-                    SetFavoritesSchedules()
-                    
+                    SetFavoritesSchedulesFromUrl()
+                    SaveFavoritesSchedules()
+                    self.delegateUpdate?.update()
                 })
                 currentLecturer = nil
             } else {
@@ -242,7 +254,6 @@ extension SearchViewController {
         tableView.reloadData()
     }
     
-    
     @objc func longPress(longPressGestureRecognizer: UILongPressGestureRecognizer) {
         if longPressGestureRecognizer.state == UIGestureRecognizer.State.began {
             
@@ -260,4 +271,10 @@ extension SearchViewController {
             }
         }
     }
+}
+
+//MARK: DelegateProtocol
+
+protocol UpdateProtocol {
+    func update()
 }

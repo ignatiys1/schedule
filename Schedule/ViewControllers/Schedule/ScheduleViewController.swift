@@ -12,10 +12,17 @@ import FSCalendar
 class ScheduleViewController: UIViewController {
     
     var calendarHeight: NSLayoutConstraint!
+    
     var swipeUp: UISwipeGestureRecognizer!
     var swipeDown: UISwipeGestureRecognizer!
+    
+    var swipeLeft: UISwipeGestureRecognizer!
+    var swipeRight: UISwipeGestureRecognizer!
+    
+    var refreshControl: UIRefreshControl?
     var indexInFavorites: Int?
     
+
     
     private var calendar: FSCalendar = {
         let calendar = FSCalendar()
@@ -58,17 +65,18 @@ class ScheduleViewController: UIViewController {
         calendar.scope = .week
         calendar.select(.now)
         
+        
         showHideButton.addTarget(self, action: #selector(showHideButtonTapped), for: .touchUpInside)
         showHideButton.isHidden = true
         
         
-        let refreshControl = UIRefreshControl()
-        refreshControl.attributedTitle = NSAttributedString(string: "Updating...")
-        refreshControl.addTarget(self, action: #selector(refresh), for: UIControl.Event.valueChanged)
+        refreshControl = UIRefreshControl()
+        refreshControl!.attributedTitle = NSAttributedString(string: "Updating...")
+        refreshControl!.addTarget(self, action: #selector(refresh), for: UIControl.Event.valueChanged)
         tableView.dataSource = self
         tableView.delegate = self
         tableView.register(ScheduleTableViewCell.self, forCellReuseIdentifier: idScheduleCell)
-        tableView.addSubview(refreshControl)
+        tableView.addSubview(refreshControl!)
         
         setConstraints()
         createSwipeRecognizer()
@@ -81,8 +89,9 @@ class ScheduleViewController: UIViewController {
             for (index, schedule) in favoritesSchedules.enumerated() {
                 if schedule.studentGroup?.id == currentGroup?.id {
                     indexInFavorites = index
+                    self.refreshControl?.endRefreshing()
                     tableView.reloadData()
-                    tableView.refreshControl?.endRefreshing()
+                    
                 }
             }
         }
@@ -96,8 +105,18 @@ class ScheduleViewController: UIViewController {
         swipeDown = UISwipeGestureRecognizer(target: self, action: #selector(swipeAction(swipe:)))
         swipeDown.direction = .down
         
+        swipeLeft = UISwipeGestureRecognizer(target: self, action: #selector(swipeAction(swipe:)))
+        swipeLeft.direction = .left
+        swipeRight = UISwipeGestureRecognizer(target: self, action: #selector(swipeAction(swipe:)))
+        swipeRight.direction = .right
+        
+        
         calendar.addGestureRecognizer(swipeUp)
         calendar.addGestureRecognizer(swipeDown)
+        
+        
+        tableView.addGestureRecognizer(swipeLeft)
+        tableView.addGestureRecognizer(swipeRight)
         
     }
     
@@ -158,9 +177,7 @@ extension ScheduleViewController: FSCalendarDelegate, FSCalendarDataSource {
     }
     
     func calendar(_ calendar: FSCalendar, didSelect date: Date, at monthPosition: FSCalendarMonthPosition) {
-        
-        
-        
+        self.viewWillAppear(true)
     }
     
 }
@@ -174,22 +191,23 @@ extension ScheduleViewController: UITableViewDelegate, UITableViewDataSource {
         guard let indexInFavorites = indexInFavorites else {
             return 0
         }
-        let currentSchedules = favoritesSchedules[indexInFavorites].schedules
+        var count = 0
         
-        if ((calendar.selectedDate?.isEqual(.now)) != nil) {
-            var count = 0
-            
-            for schItem in favoritesSchedules[indexInFavorites].todaySchedules {
-                for weekNum in schItem.weekNumber {
-                    if weekNum == 0 || weekNum == currentWeekNum {
-                        count += 1
+        for schItem in favoritesSchedules[indexInFavorites].schedules {
+            if schItem.weekDay?.uppercased() == getWeekDay(for: calendar.selectedDate!) {
+                for subj in schItem.schedule {
+                    for weekNum in subj.weekNumber {
+                        if weekNum == 0 || weekNum == currentWeekNum {
+                            count += 1
+                            break
+                        }
                     }
                 }
             }
-            return count
-            
         }
-        return 0
+        return count
+        
+        
         
     }
     
@@ -204,9 +222,37 @@ extension ScheduleViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: idScheduleCell, for: indexPath) as! ScheduleTableViewCell
+        guard let indexInFavorites = indexInFavorites else {
+            return cell
+        }
         
-        //cell.textLabel?.text = "Hello"
-        cell.backgroundColor = .blue
+        var count = 0;
+        for schItem in favoritesSchedules[indexInFavorites].schedules {
+            if schItem.weekDay?.uppercased() == getWeekDay(for: calendar.selectedDate!) {
+                for (index,subj) in schItem.schedule.enumerated() {
+                    for weekNum in subj.weekNumber {
+                        if weekNum == 0 || weekNum == currentWeekNum {
+                            cell.lessonName.text = subj.subject
+                            cell.teacherName.text = subj.employee[0].fio
+                            cell.lessonTime.text = subj.lessonTime
+                            cell.lessonClass.text = subj.auditory[0]
+                            switch subj.lessonType {
+                            case SubjectTypes.LK.rawValue: cell.backgroundColor = .green
+                            case SubjectTypes.LR.rawValue: cell.backgroundColor = .red
+                            case SubjectTypes.PZ.rawValue: cell.backgroundColor = .yellow
+                            default: break
+                            }
+                            count += 1
+                            break
+                        }
+                    }
+                    if (count>indexPath.section) {
+                        return cell
+                    }
+                
+                }
+            }
+        }
         
         return cell
         
@@ -216,6 +262,26 @@ extension ScheduleViewController: UITableViewDelegate, UITableViewDataSource {
         let headerView = UIView()
         headerView.backgroundColor = UIColor.clear
         return headerView
+    }
+    
+    func getWeekDay(for date: Date) -> String {
+        let calendarCurrent = Calendar.current
+        let component = calendarCurrent.dateComponents([.weekday], from: date)
+        
+        guard let weekDay = component.weekday else {
+            return ""
+        }
+        switch weekDay {
+        case 2: return "ПОНЕДЕЛЬНИК"
+        case 3: return "ВТОРНИК"
+        case 4: return "СРЕДА"
+        case 5: return "ЧЕТВЕРГ"
+        case 6: return "ПЯТНИЦА"
+        case 7: return "СУББОТА"
+        case 1: return "ВОСКРЕСЕНЬЕ"
+        default: return ""
+        }
+        
     }
     
 }
@@ -251,16 +317,31 @@ extension ScheduleViewController {
                 calendar.setScope(.month, animated: true)
                 showHideButton.setTitle("Close calendar", for: .normal)
             }
+        case swipeLeft:
+            calendar.select(calendar.selectedDate?.addingTimeInterval(86400.0))
+            viewWillAppear(true)
+        case swipeRight:
+            calendar.select(calendar.selectedDate?.addingTimeInterval(-86400.0))
+            viewWillAppear(true)
         default: break
         }
     }
     
     @objc func addSchedule () {
         let searchVC = SearchViewController()
+        searchVC.delegateUpdate = self
         navigationController?.pushViewController(searchVC, animated: true)
     }
 
     @objc func refresh() {
+        self.viewWillAppear(true)
+    }
+
+}
+
+//MARK: Update delegate
+extension ScheduleViewController: UpdateProtocol {
+    func update() {
         self.viewWillAppear(true)
     }
 }

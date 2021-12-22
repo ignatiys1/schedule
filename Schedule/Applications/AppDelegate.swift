@@ -24,20 +24,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         window?.makeKeyAndVisible()
         window?.overrideUserInterfaceStyle = .light
         
-        if lecturers.isEmpty {
-            SetLecturersArray()
-        }
-        if groups.isEmpty {
-            SetGroupsArray()
-        }
-        
-        if favoritesGroups.isEmpty {
-            SetFavoritesGroups()
-        }
-        
-        if favoritesLecturers.isEmpty {
-            SetFavoritesLecturers()
-        }
         
         return true
     }

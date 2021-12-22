@@ -43,8 +43,8 @@ var employee: Lecturer?
     var schedules: [ScheduleItem] = []
     
     
-    var tomorrowDate: Date?
-    var tomorrowSchedules: [ScheduleItem] = []
+    //var tomorrowDate: Date?
+    //var tomorrowSchedules: [ScheduleItem] = []
     
     var todayDate: Date?
     var todaySchedules: [Subject] = []
@@ -87,4 +87,10 @@ struct Subject : Decodable, Encodable {
     
     
     
+}
+
+enum SubjectTypes: String {
+    case LK = "ЛК"
+    case LR = "ЛР"
+    case PZ = "ПЗ"
 }
