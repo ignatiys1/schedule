@@ -56,6 +56,7 @@ class ScheduleViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = #colorLiteral(red: 0.9400000572, green: 0.9400000572, blue: 0.9400000572, alpha: 1)
         title = "Schedule"
+        
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addSchedule))
         
         
@@ -232,16 +233,8 @@ extension ScheduleViewController: UITableViewDelegate, UITableViewDataSource {
                 for (index,subj) in schItem.schedule.enumerated() {
                     for weekNum in subj.weekNumber {
                         if weekNum == 0 || weekNum == currentWeekNum {
-                            cell.lessonName.text = subj.subject
-                            cell.teacherName.text = subj.employee[0].fio
-                            cell.lessonTime.text = subj.lessonTime
-                            cell.lessonClass.text = subj.auditory[0]
-                            switch subj.lessonType {
-                            case SubjectTypes.LK.rawValue: cell.backgroundColor = .green
-                            case SubjectTypes.LR.rawValue: cell.backgroundColor = .red
-                            case SubjectTypes.PZ.rawValue: cell.backgroundColor = .yellow
-                            default: break
-                            }
+                            
+                            cell.setCell(for: subj)
                             count += 1
                             break
                         }
