@@ -30,15 +30,14 @@ class SubjectTableViewController: UITableViewController {
     // MARK: - Table view data source
 
     override func numberOfSections(in tableView: UITableView) -> Int {
-        return 4
+        return 3
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch section {
-        case 0: return 1
+        case 0: return 2
         case 1: return 2
         case 2: return 2
-        case 3: return 2
         default: return 0
         }
     }
@@ -61,19 +60,6 @@ class SubjectTableViewController: UITableViewController {
         
         switch indexPath.section {
         case 0:
-            cell?.isImage = true
-            if let photoLink = subject!.employee[0].photoLink {
-                if let url = URL(string: photoLink) {
-                    RequestManager.shared.getData(from: url) { data, urlResponse, error in
-                        DispatchQueue.main.async {
-                            if let data = data {
-                                cell!.image.image = UIImage(data: data)
-                            }
-                        }
-                    }
-                }
-            }
-        case 1:
             switch indexPath.row {
             case 0:
                 cell?.isImage = false
@@ -85,7 +71,7 @@ class SubjectTableViewController: UITableViewController {
                 cell?.label2.text = subject?.lessonType
             default: break
             }
-        case 2:
+        case 1:
             switch indexPath.row {
             case 0:
                 cell?.isImage = false
@@ -97,7 +83,7 @@ class SubjectTableViewController: UITableViewController {
                 cell?.label2.text = subject?.auditory[0]
             default: break
             }
-        case 3:
+        case 2:
             switch indexPath.row {
             case 0:
                 cell?.isImage = false
