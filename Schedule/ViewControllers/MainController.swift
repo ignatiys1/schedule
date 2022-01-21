@@ -25,9 +25,6 @@ var currentLecturer: Lecturer?
 var currentWeekNum: Int?
 
 class MainController: UINavigationController {
-
-    
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -49,7 +46,7 @@ class MainController: UINavigationController {
             SetFavoritesSchedulesFromArray()
         }
         
-        currentWeekNum = UserDefaults.standard.object(forKey: "currentWeekNum") as? Int
+        //currentWeekNum = UserDefaults.standard.object(forKey: "currentWeekNum") as? Int
         if !favoritesGroups.isEmpty {
             currentGroup = favoritesGroups[0]
         }
@@ -84,10 +81,6 @@ class MainController: UINavigationController {
         viewControllers = [ScheduleViewController()]
         
     }
-    
-    
-    
-    
 }
 
 
@@ -127,20 +120,15 @@ func SetGroupsArray() {
     } catch {
         print(error)
     }
-    
-    
 }
 
 func SetFavoritesGroups() {
     let data = UserDefaults.standard.object(forKey: "favGroups_array")
     
-    
     if data == nil {
         return
     }
-    
     favoritesGroups = try! decoder.decode([Group].self, from: data! as! Data)
-    
 }
 
 func SetFavoritesLecturers() {

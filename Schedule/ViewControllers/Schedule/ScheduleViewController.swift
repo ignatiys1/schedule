@@ -22,8 +22,9 @@ class ScheduleViewController: UIViewController {
     var refreshControl: UIRefreshControl?
     var indexInFavorites: Int?
     
-
+    var refreshAlert: UIAlertController?
     
+    var groupChanged = false
     private var calendar: FSCalendar = {
         let calendar = FSCalendar()
         calendar.translatesAutoresizingMaskIntoConstraints = false
@@ -57,8 +58,14 @@ class ScheduleViewController: UIViewController {
         view.backgroundColor = #colorLiteral(red: 0.9400000572, green: 0.9400000572, blue: 0.9400000572, alpha: 1)
         title = "Schedule"
         
+        if let currentGroup = currentGroup {
+            title! += " \(currentGroup.name)"
+        } else if let currentLecturer = currentLecturer {
+            title! += " \(currentLecturer.fio)"
+        }
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addSchedule))
         
+        refreshAlert = UIAlertController(title: "Обновление...", message: nil, preferredStyle: .actionSheet)
         
         
         calendar.delegate = self
@@ -82,20 +89,8 @@ class ScheduleViewController: UIViewController {
         setConstraints()
         createSwipeRecognizer()
         
-    }
-    
-    
-    override func viewWillAppear(_ animated: Bool) {
-        if currentGroup != nil {
-            for (index, schedule) in favoritesSchedules.enumerated() {
-                if schedule.studentGroup?.id == currentGroup?.id {
-                    indexInFavorites = index
-                    self.refreshControl?.endRefreshing()
-                    tableView.reloadData()
-                    
-                }
-            }
-        }
+        sleep(1)
+        update()
     }
     
     //MARK: Swipe recognizer
@@ -178,7 +173,7 @@ extension ScheduleViewController: FSCalendarDelegate, FSCalendarDataSource {
     }
     
     func calendar(_ calendar: FSCalendar, didSelect date: Date, at monthPosition: FSCalendarMonthPosition) {
-        self.viewWillAppear(true)
+        update()
     }
     
 }
@@ -228,21 +223,25 @@ extension ScheduleViewController: UITableViewDelegate, UITableViewDataSource {
         }
         
         var count = 0;
-        for schItem in favoritesSchedules[indexInFavorites].schedules {
-            if schItem.weekDay?.uppercased() == getWeekDay(for: calendar.selectedDate!) {
-                for (index,subj) in schItem.schedule.enumerated() {
-                    for weekNum in subj.weekNumber {
-                        if weekNum == 0 || weekNum == currentWeekNum {
+        for schedule in favoritesSchedules {
+            if schedule.studentGroup?.id == currentGroup?.id {
+                for schItem in schedule.schedules {
+                    if schItem.weekDay?.uppercased() == getWeekDay(for: calendar.selectedDate!) {
+                        for (index,subj) in schItem.schedule.enumerated() {
+                            for weekNum in subj.weekNumber {
+                                if weekNum == 0 || weekNum == currentWeekNum {
+                                    
+                                    cell.setCell(for: subj)
+                                    count += 1
+                                    break
+                                }
+                            }
+                            if (count>indexPath.section) {
+                                return cell
+                            }
                             
-                            cell.setCell(for: subj)
-                            count += 1
-                            break
                         }
                     }
-                    if (count>indexPath.section) {
-                        return cell
-                    }
-                
                 }
             }
         }
@@ -255,6 +254,40 @@ extension ScheduleViewController: UITableViewDelegate, UITableViewDataSource {
         let headerView = UIView()
         headerView.backgroundColor = UIColor.clear
         return headerView
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        guard let indexInFavorites = indexInFavorites else {
+            return
+        }
+        
+        var subjectToSend: Subject?
+        var count = 0
+        
+        for schItem in favoritesSchedules[indexInFavorites].schedules {
+            if schItem.weekDay?.uppercased() == getWeekDay(for: calendar.selectedDate!) {
+                for (index,subj) in schItem.schedule.enumerated() {
+                    for weekNum in subj.weekNumber {
+                        if weekNum == 0 || weekNum == currentWeekNum {
+                            
+                            subjectToSend = subj
+                            count += 1
+                            break
+                        }
+                    }
+                    if (count>indexPath.section) {
+                        break
+                    }
+                }
+            }
+        }
+        
+        if let subjectToSend = subjectToSend {
+            let VC = SubjectTableViewController()
+            VC.subject = subjectToSend
+            self.navigationController?.pushViewController(VC, animated: true)
+        }
     }
     
     func getWeekDay(for date: Date) -> String {
@@ -327,7 +360,43 @@ extension ScheduleViewController {
     }
 
     @objc func refresh() {
-        self.viewWillAppear(true)
+        refreshBegin(newtext: "Refresh",
+                     refreshEnd: {(x:Int) -> () in
+            self.update()
+            self.refreshControl?.endRefreshing()
+        })
+    }
+    
+    func refreshBegin(newtext:String, refreshEnd: @escaping (Int) -> ()) {
+        DispatchQueue.global(qos: .default).async(execute: {
+            
+            var indexToDelete: Int?
+            if currentGroup != nil {
+                for (index, schedule) in favoritesSchedules.enumerated() {
+                    if schedule.studentGroup?.id == currentGroup?.id {
+                        indexToDelete = index
+                    }
+                }
+            }
+            if let indexToDelete = indexToDelete {
+                favoritesSchedules.remove(at: indexToDelete)
+            }
+            
+            RequestManager.shared.loadSchedule(for: currentGroup!, completionHandler: { (url) in
+                
+                UserDefaults.standard.set(url.path, forKey: "favorite_url_path")
+                UserDefaults.standard.synchronize()
+                
+                
+                SetFavoritesSchedulesFromUrl()
+                SaveFavoritesSchedules()
+                
+                DispatchQueue.main.async(execute: {
+                    
+                    refreshEnd(0)
+                })
+            })
+        })
     }
 
 }
@@ -335,6 +404,25 @@ extension ScheduleViewController {
 //MARK: Update delegate
 extension ScheduleViewController: UpdateProtocol {
     func update() {
-        self.viewWillAppear(true)
+        title = "Schedule"
+        
+        if let currentGroup = currentGroup {
+            title! += " \(currentGroup.name)"
+        }
+        var favSc = favoritesSchedules
+        if currentGroup != nil {
+            for (index, schedule) in favoritesSchedules.enumerated() {
+                if schedule.studentGroup?.id == currentGroup?.id {
+                    indexInFavorites = index
+                    tableView.reloadData()
+                }
+            }
+        }
+        refreshAlert?.dismiss(animated: true, completion: nil)
     }
+    
+    func startUpdating() {
+        present(refreshAlert!, animated: true, completion: nil)
+    }
+    
 }

@@ -19,7 +19,7 @@ class ScheduleTableViewCell: UITableViewCell {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         
         self.layer.cornerRadius = 10
-        self.selectionStyle = .none
+        self.selectionStyle = .default
         DispatchQueue.main.asyncAfter(deadline: .now()+0.05, execute: {
             self.setConstraints()
         })
@@ -37,7 +37,7 @@ class ScheduleTableViewCell: UITableViewCell {
         self.lessonClass.text = subject.auditory[0]
         switch subject.lessonType {
         case SubjectTypes.LK.rawValue:
-            self.backgroundColor = #colorLiteral(red: 0.3411764801, green: 0.6235294342, blue: 0.1686274558, alpha: 1)
+            self.backgroundColor = .green
             self.lessonName.textColor = .black
             self.teacherName.textColor = .black
             self.lessonTime.textColor = .black

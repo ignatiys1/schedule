@@ -38,7 +38,7 @@ struct Lecturer: Decodable,  Encodable {
 
 struct SomeSchedule: Decodable, Encodable {
     
-var employee: Lecturer?
+    var employee: Lecturer?
     var studentGroup: Group?
     var schedules: [ScheduleItem] = []
     

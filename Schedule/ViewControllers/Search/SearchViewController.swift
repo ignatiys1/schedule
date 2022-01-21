@@ -45,12 +45,9 @@ class SearchViewController: UIViewController {
         view.backgroundColor = #colorLiteral(red: 0.9400000572, green: 0.9400000572, blue: 0.9400000572, alpha: 1)
         title  = "Search"
         
-        let longPressRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(longPress(longPressGestureRecognizer:)))
-        longPressRecognizer.minimumPressDuration = 0.5
         tableView.delegate = self
         tableView.dataSource = self
         tableView.register(SearchCell.self, forCellReuseIdentifier: idSearchCell)
-        tableView.addGestureRecognizer(longPressRecognizer)
         
         
         searchField.addTarget(self, action: #selector(self.textFieldDidChange), for: .editingChanged)
@@ -120,27 +117,45 @@ extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
                 }
                 favoritesGroups.append(groupsForShow[indexPath.row])
                 currentGroup = groupsForShow[indexPath.row]
-                RequestManager.shared.loadSchedule(for: currentGroup!, completionHandler: {urlPath in
-                    
-                    UserDefaults.standard.set(urlPath.path, forKey: "favorite_url_path")
-                    UserDefaults.standard.synchronize()
-                    
-                    
-                    SetFavoritesSchedulesFromUrl()
-                    SaveFavoritesSchedules()
-                    self.delegateUpdate?.update()
-                })
-                currentLecturer = nil
-            } else {
-                for lector in favoritesLecturers {
-                    if lector.id == lecturerForShow[indexPath.row - groupsForShow.count].id {
-                        self.navigationController?.popViewController(animated: true)
-                        return
+                
+                //favoritesSchedules.removeAll()
+                var needToLoad = true
+                if currentGroup != nil {
+                    for (index, schedule) in favoritesSchedules.enumerated() {
+                        if schedule.studentGroup?.id == currentGroup?.id {
+                            needToLoad = false
+                        }
                     }
                 }
-                favoritesLecturers.append(lecturerForShow[indexPath.row - groupsForShow.count])
-                currentGroup = nil
-                currentLecturer = lecturerForShow[indexPath.row - groupsForShow.count]
+                if needToLoad {
+                    self.navigationController?.popViewController(animated: true)
+                    self.delegateUpdate?.startUpdating()
+                    RequestManager.shared.loadSchedule(for: currentGroup!, completionHandler: {urlPath in
+                        
+                        UserDefaults.standard.set(urlPath.path, forKey: "favorite_url_path")
+                        UserDefaults.standard.synchronize()
+                        
+                        
+                        SetFavoritesSchedulesFromUrl()
+                        SaveFavoritesSchedules()
+                        DispatchQueue.main.async {
+                            self.delegateUpdate?.update()
+                        }
+                    })
+                } else {
+                    self.delegateUpdate?.update()
+                }
+                currentLecturer = nil
+            } else {
+//                for lector in favoritesLecturers {
+//                    if lector.id == lecturerForShow[indexPath.row - groupsForShow.count].id {
+//                        self.navigationController?.popViewController(animated: true)
+//                        return
+//                    }
+//                }
+//                favoritesLecturers.append(lecturerForShow[indexPath.row - groupsForShow.count])
+//                currentGroup = nil
+//                currentLecturer = lecturerForShow[indexPath.row - groupsForShow.count]
                 
             }
             SaveFavorites()
@@ -148,23 +163,37 @@ extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
             
             if indexPath.row <= favoritesGroups.count-1 {
                 currentGroup = favoritesGroups[indexPath.row]
-                RequestManager.shared.loadSchedule(for: favoritesGroups[indexPath.row], completionHandler: {urlPath in
-                    
-                    UserDefaults.standard.set(urlPath.path, forKey: "favorite_url_path")
-                    UserDefaults.standard.synchronize()
-                    
-                    
-                    SetFavoritesSchedulesFromUrl()
-                    SaveFavoritesSchedules()
+
+                //favoritesSchedules.removeAll()
+                var needToLoad = true
+                if currentGroup != nil {
+                    for (index, schedule) in favoritesSchedules.enumerated() {
+                        if schedule.studentGroup?.id == currentGroup?.id {
+                            needToLoad = false
+                        }
+                    }
+                }
+                if needToLoad {
+                    self.delegateUpdate?.startUpdating()
+                    RequestManager.shared.loadSchedule(for: currentGroup!, completionHandler: {urlPath in
+                        
+                        UserDefaults.standard.set(urlPath.path, forKey: "favorite_url_path")
+                        UserDefaults.standard.synchronize()
+                        
+                        
+                        SetFavoritesSchedulesFromUrl()
+                        SaveFavoritesSchedules()
+                        self.delegateUpdate?.update()
+                    })
+                } else {
                     self.delegateUpdate?.update()
-                })
+                }
                 currentLecturer = nil
             } else {
-                currentGroup = nil
-                currentLecturer = favoritesLecturers[indexPath.row - favoritesGroups.count]
-                
+//                currentGroup = nil
+//                currentLecturer = favoritesLecturers[indexPath.row - favoritesGroups.count]
+
             }
-            
             
         }
         self.navigationController?.popViewController(animated: true)
@@ -254,27 +283,12 @@ extension SearchViewController {
         tableView.reloadData()
     }
     
-    @objc func longPress(longPressGestureRecognizer: UILongPressGestureRecognizer) {
-        if longPressGestureRecognizer.state == UIGestureRecognizer.State.began {
-            
-            let touchPoint = longPressGestureRecognizer.location(in: self.view)
-            print(touchPoint)
-            if let indexPath = self.tableView.indexPathForRow(at: touchPoint) {
-                if !(lecturerForShow.count > 0 || groupsForShow.count > 0) {
-                    if indexPath.row <= favoritesGroups.count-1 {
-                        favoritesGroups.remove(at: indexPath.row)
-                    } else {
-                        favoritesLecturers.remove(at: indexPath.row - favoritesGroups.count)
-                    }
-                    tableView.reloadData()
-                }
-            }
-        }
-    }
 }
 
 //MARK: DelegateProtocol
 
 protocol UpdateProtocol {
     func update()
+    func startUpdating()
+    
 }

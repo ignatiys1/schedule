@@ -15,6 +15,8 @@
 		FF8C58A2276F665C00A74F88 /* Structures.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF8C58A1276F665C00A74F88 /* Structures.swift */; };
 		FF8C58A4276F6BB700A74F88 /* SearchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF8C58A3276F6BB700A74F88 /* SearchViewController.swift */; };
 		FF8C58A7276F6DE600A74F88 /* SearchCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF8C58A6276F6DE600A74F88 /* SearchCell.swift */; };
+		FF9982842799E580008492F3 /* SubjectTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF9982832799E580008492F3 /* SubjectTableViewController.swift */; };
+		FF9982862799E89F008492F3 /* SubjectTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF9982852799E89F008492F3 /* SubjectTableViewCell.swift */; };
 		FFD3AFE1276E0BE500B3C987 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFD3AFE0276E0BE500B3C987 /* AppDelegate.swift */; };
 		FFD3AFE5276E0BE500B3C987 /* MainController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFD3AFE4276E0BE500B3C987 /* MainController.swift */; };
 		FFD3AFEA276E0BE700B3C987 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FFD3AFE9276E0BE700B3C987 /* Assets.xcassets */; };
@@ -30,6 +32,8 @@
 		FF8C58A1276F665C00A74F88 /* Structures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Structures.swift; sourceTree = "<group>"; };
 		FF8C58A3276F6BB700A74F88 /* SearchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchViewController.swift; sourceTree = "<group>"; };
 		FF8C58A6276F6DE600A74F88 /* SearchCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchCell.swift; sourceTree = "<group>"; };
+		FF9982832799E580008492F3 /* SubjectTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubjectTableViewController.swift; sourceTree = "<group>"; };
+		FF9982852799E89F008492F3 /* SubjectTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubjectTableViewCell.swift; sourceTree = "<group>"; };
 		FFD3AFDD276E0BE500B3C987 /* Schedule.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Schedule.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FFD3AFE0276E0BE500B3C987 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		FFD3AFE4276E0BE500B3C987 /* MainController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainController.swift; sourceTree = "<group>"; };
@@ -65,14 +69,6 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		FF8C5894276E3BAC00A74F88 /* ScheduleCell */ = {
-			isa = PBXGroup;
-			children = (
-				FF8C5895276E3BC900A74F88 /* ScheduleTableViewCell.swift */,
-			);
-			path = ScheduleCell;
-			sourceTree = "<group>";
-		};
 		FF8C5897276E44D300A74F88 /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
@@ -98,11 +94,21 @@
 			path = Search;
 			sourceTree = "<group>";
 		};
+		FF9982822799E556008492F3 /* OneSubject */ = {
+			isa = PBXGroup;
+			children = (
+				FF9982832799E580008492F3 /* SubjectTableViewController.swift */,
+				FF9982852799E89F008492F3 /* SubjectTableViewCell.swift */,
+			);
+			path = OneSubject;
+			sourceTree = "<group>";
+		};
 		FFCD38792770E13F008D01B6 /* Schedule */ = {
 			isa = PBXGroup;
 			children = (
+				FF9982822799E556008492F3 /* OneSubject */,
 				FFD3AFF9276E110C00B3C987 /* ScheduleViewController.swift */,
-				FF8C5894276E3BAC00A74F88 /* ScheduleCell */,
+				FF8C5895276E3BC900A74F88 /* ScheduleTableViewCell.swift */,
 			);
 			path = Schedule;
 			sourceTree = "<group>";
@@ -249,9 +255,11 @@
 			files = (
 				FFD3AFFA276E110C00B3C987 /* ScheduleViewController.swift in Sources */,
 				FF8C589A276E44FC00A74F88 /* UIExtensions.swift in Sources */,
+				FF9982842799E580008492F3 /* SubjectTableViewController.swift in Sources */,
 				FF8C58A4276F6BB700A74F88 /* SearchViewController.swift in Sources */,
 				FF8C5896276E3BC900A74F88 /* ScheduleTableViewCell.swift in Sources */,
 				FF8C58A7276F6DE600A74F88 /* SearchCell.swift in Sources */,
+				FF9982862799E89F008492F3 /* SubjectTableViewCell.swift in Sources */,
 				FF8C58A2276F665C00A74F88 /* Structures.swift in Sources */,
 				FF8C58A0276F5DAA00A74F88 /* RequestManager.swift in Sources */,
 				FFD3AFE5276E0BE500B3C987 /* MainController.swift in Sources */,
